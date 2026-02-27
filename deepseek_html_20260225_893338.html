@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pendataan Pelanggaran Siswa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --cream: #FFF8E7;
+            --red: #B22222;
+            --dark-red: #8B0000;
+            --light-red: #FF6B6B;
+            --gray: #333333;
+            --light-gray: #f5f5f5;
+        }
+
+        body {
+            background-color: var(--cream);
+            color: var(--gray);
+            overflow-x: hidden;
+        }
+
+        /* Animasi Logo dan Start */
+        .preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--cream);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.8s, visibility 0.8s;
+        }
+
+        .preloader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .logo-container {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 30px;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo {
+            width: 100%;
+            height: 100%;
+            background-color: var(--red);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 60px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border: 8px solid var(--dark-red);
+        }
+
+        .logo:before {
+            content: "";
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            border: 4px dashed var(--red);
+            border-radius: 50%;
+            animation: spin 20s linear infinite;
+        }
+
+        .start-btn {
+            background-color: var(--red);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(178, 34, 34, 0.3);
+        }
+
+        .start-btn:hover {
+            background-color: var(--dark-red);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(178, 34, 34, 0.4);
+        }
+
+        .start-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Animasi Masuk */
+        .main-content {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s, transform 0.8s;
+        }
+
+        .main-content.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Header dengan animasi ketik */
+        .header {
+            background: linear-gradient(135deg, var(--red), var(--dark-red));
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .title-container {
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 3px solid white;
+            width: 0;
+            animation: typing 4s steps(40, end) forwards, blink-caret 0.75s step-end infinite;
+            animation-delay: 0.5s;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 10px;
+            animation: fadeIn 2s ease-in forwards;
+            animation-delay: 4.5s;
+            opacity: 0;
+        }
+
+        /* Container utama */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Form input data */
+        .data-form {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+            transition: transform 0.3s;
+        }
+
+        .data-form:hover {
+            transform: translateY(-5px);
+        }
+
+        .form-title {
+            color: var(--red);
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--cream);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--gray);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--red);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(178, 34, 34, 0.1);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        /* Animasi kelas */
+        .class-selection {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .class-option {
+            padding: 10px 15px;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            border: 2px solid transparent;
+        }
+
+        .class-option:hover {
+            background-color: #e0e0e0;
+        }
+
+        .class-option.selected {
+            background-color: var(--red);
+            color: white;
+            border-color: var(--dark-red);
+        }
+
+        /* Pelanggaran options */
+        .violation-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .violation-option {
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            border: 2px solid transparent;
+        }
+
+        .violation-option i {
+            margin-right: 10px;
+            font-size: 20px;
+            color: var(--red);
+        }
+
+        .violation-option:hover {
+            background-color: #e0e0e0;
+        }
+
+        .violation-option.selected {
+            background-color: rgba(178, 34, 34, 0.1);
+            border-color: var(--red);
+        }
+
+        /* Tombol aksi */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-submit {
+            background-color: var(--red);
+            color: white;
+            flex: 2;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--dark-red);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(178, 34, 34, 0.3);
+        }
+
+        .btn-reset {
+            background-color: var(--light-gray);
+            color: var(--gray);
+            flex: 1;
+        }
+
+        .btn-reset:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* Tabel data */
+        .data-table {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+        }
+
+        .table-title {
+            color: var(--red);
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--cream);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: var(--red);
+            color: white;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(178, 34, 34, 0.05);
+        }
+
+        .violation-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: rgba(178, 34, 34, 0.1);
+            color: var(--red);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        .delete-btn {
+            background-color: transparent;
+            color: var(--red);
+            border: 1px solid var(--red);
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .delete-btn:hover {
+            background-color: var(--red);
+            color: white;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray);
+            border-top: 1px solid #ddd;
+            margin-top: 30px;
+            font-size: 0.9rem;
+        }
+
+        /* Animasi */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: white }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsif */
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .violation-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Preloader dengan logo dan tombol start -->
+    <div class="preloader" id="preloader">
+        <div class="logo-container">
+            <div class="logo">
+                <i class="fas fa-school"></i>
+            </div>
+        </div>
+        <button class="start-btn" id="startBtn">
+            <i class="fas fa-play-circle"></i> MULAI APLIKASI
+        </button>
+    </div>
+
+    <!-- Konten utama -->
+    <div class="main-content" id="mainContent">
+        <header class="header">
+            <div class="container">
+                <div class="title-container">
+                    <h1 class="title">Pendataan Pelanggaran Siswa</h1>
+                    <p class="subtitle">Sistem pencatatan pelanggaran siswa secara digital</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- Form input data -->
+            <section class="data-form">
+                <h2 class="form-title">Form Input Pelanggaran Siswa</h2>
+                <form id="violationForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="studentName">Nama Siswa</label>
+                            <input type="text" id="studentName" class="form-control" placeholder="Masukkan nama siswa" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Kelas</label>
+                            <div class="class-selection" id="classSelection">
+                                <!-- Kelas akan di-generate oleh JavaScript -->
+                            </div>
+                            <input type="hidden" id="selectedClass" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Jenis Pelanggaran</label>
+                        <div class="violation-options">
+                            <div class="violation-option" data-violation="bolos">
+                                <i class="fas fa-running"></i>
+                                <span>Bolos Sekolah</span>
+                            </div>
+                            <div class="violation-option" data-violation="tawuran">
+                                <i class="fas fa-fist-raised"></i>
+                                <span>Tawuran</span>
+                            </div>
+                            <div class="violation-option" data-violation="bullying">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Pembullyan</span>
+                            </div>
+                            <div class="violation-option" data-violation="terlambat">
+                                <i class="fas fa-clock"></i>
+                                <span>Terlambat Masuk</span>
+                            </div>
+                            <div class="violation-option" data-violation="seragam">
+                                <i class="fas fa-tshirt"></i>
+                                <span>Pelanggaran Seragam</span>
+                            </div>
+                            <div class="violation-option" data-violation="lainnya">
+                                <i class="fas fa-ellipsis-h"></i>
+                                <span>Pelanggaran Lainnya</span>
+                            </div>
+                        </div>
+                        <input type="hidden" id="selectedViolation" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="violationDate">Tanggal Pelanggaran</label>
+                        <input type="date" id="violationDate" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="violationDesc">Keterangan / Deskripsi</label>
+                        <textarea id="violationDesc" class="form-control" rows="4" placeholder="Deskripsikan pelanggaran yang dilakukan..."></textarea>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button type="submit" class="btn btn-submit">
+                            <i class="fas fa-save"></i> Simpan Data Pelanggaran
+                        </button>
+                        <button type="button" id="resetBtn" class="btn btn-reset">
+                            <i class="fas fa-redo"></i> Reset Form
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Tabel data pelanggaran -->
+            <section class="data-table">
+                <h2 class="table-title">Data Pelanggaran Siswa</h2>
+                <div class="table-responsive">
+                    <table id="violationTable">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Nama Siswa</th>
+                                <th>Kelas</th>
+                                <th>Jenis Pelanggaran</th>
+                                <th>Tanggal</th>
+                                <th>Keterangan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="violationTableBody">
+                            <!-- Data akan diisi oleh JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <p>&copy; 2023 Sistem Pendataan Pelanggaran Siswa. Dibuat untuk memantau dan mencatat pelanggaran siswa.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Data awal untuk contoh
+        let violationsData = [
+            { id: 1, name: "Andi Pratama", class: "11-B", violation: "bolos", date: "2023-10-15", desc: "Bolos pada pelajaran matematika" },
+            { id: 2, name: "Budi Santoso", class: "10-C", violation: "tawuran", date: "2023-10-12", desc: "Terlibat tawuran antar sekolah" },
+            { id: 3, name: "Citra Lestari", class: "12-A", violation: "bullying", date: "2023-10-10", desc: "Melakukan bullying terhadap adik kelas" },
+            { id: 4, name: "Dewi Anggraini", class: "11-F", violation: "terlambat", date: "2023-10-08", desc: "Terlambat masuk sekolah 3 kali dalam seminggu" }
+        ];
+
+        // Elemen DOM
+        const preloader = document.getElementById('preloader');
+        const startBtn = document.getElementById('startBtn');
+        const mainContent = document.getElementById('mainContent');
+        const classSelection = document.getElementById('classSelection');
+        const selectedClassInput = document.getElementById('selectedClass');
+        const violationOptions = document.querySelectorAll('.violation-option');
+        const selectedViolationInput = document.getElementById('selectedViolation');
+        const violationForm = document.getElementById('violationForm');
+        const resetBtn = document.getElementById('resetBtn');
+        const violationTableBody = document.getElementById('violationTableBody');
+        
+        // Fungsi untuk meng-generate pilihan kelas
+        function generateClassOptions() {
+            const grades = [10, 11, 12];
+            const classes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'];
+            
+            grades.forEach(grade => {
+                classes.forEach(cls => {
+                    const classOption = document.createElement('div');
+                    classOption.className = 'class-option';
+                    classOption.textContent = `${grade}-${cls}`;
+                    classOption.dataset.class = `${grade}-${cls}`;
+                    
+                    classOption.addEventListener('click', () => {
+                        // Hapus kelas 'selected' dari semua opsi
+                        document.querySelectorAll('.class-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        
+                        // Tambahkan kelas 'selected' ke opsi yang dipilih
+                        classOption.classList.add('selected');
+                        selectedClassInput.value = classOption.dataset.class;
+                    });
+                    
+                    classSelection.appendChild(classOption);
+                });
+            });
+        }
+
+        // Inisialisasi pilihan pelanggaran
+        violationOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Hapus kelas 'selected' dari semua opsi
+                violationOptions.forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Tambahkan kelas 'selected' ke opsi yang dipilih
+                option.classList.add('selected');
+                selectedViolationInput.value = option.dataset.violation;
+            });
+        });
+
+        // Fungsi untuk menampilkan data dalam tabel
+        function renderTable() {
+            violationTableBody.innerHTML = '';
+            
+            if (violationsData.length === 0) {
+                violationTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: #777;">
+                            <i class="fas fa-clipboard-list" style="font-size: 50px; margin-bottom: 15px; display: block;"></i>
+                            <p>Belum ada data pelanggaran. Silakan tambah data menggunakan form di atas.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            violationsData.forEach((violation, index) => {
+                const row = document.createElement('tr');
+                
+                // Format jenis pelanggaran
+                let violationText = '';
+                switch(violation.violation) {
+                    case 'bolos':
+                        violationText = 'Bolos Sekolah';
+                        break;
+                    case 'tawuran':
+                        violationText = 'Tawuran';
+                        break;
+                    case 'bullying':
+                        violationText = 'Pembullyan';
+                        break;
+                    case 'terlambat':
+                        violationText = 'Terlambat Masuk';
+                        break;
+                    case 'seragam':
+                        violationText = 'Pelanggaran Seragam';
+                        break;
+                    case 'lainnya':
+                        violationText = 'Pelanggaran Lainnya';
+                        break;
+                    default:
+                        violationText = violation.violation;
+                }
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${violation.name}</td>
+                    <td>${violation.class}</td>
+                    <td><span class="violation-badge">${violationText}</span></td>
+                    <td>${formatDate(violation.date)}</td>
+                    <td>${violation.desc}</td>
+                    <td>
+                        <button class="delete-btn" data-id="${violation.id}">
+                            <i class="fas fa-trash-alt"></i> Hapus
+                        </button>
+                    </td>
+                `;
+                
+                violationTableBody.appendChild(row);
+            });
+            
+            // Tambahkan event listener untuk tombol hapus
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.id);
+                    deleteViolation(id);
+                });
+            });
+        }
+
+        // Fungsi untuk memformat tanggal
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('id-ID', options);
+        }
+
+        // Fungsi untuk menambah data pelanggaran
+        function addViolation(violation) {
+            // Generate ID baru
+            const newId = violationsData.length > 0 ? Math.max(...violationsData.map(v => v.id)) + 1 : 1;
+            
+            // Tambahkan data baru
+            violationsData.push({
+                id: newId,
+                name: violation.name,
+                class: violation.class,
+                violation: violation.violation,
+                date: violation.date,
+                desc: violation.desc
+            });
+            
+            // Render ulang tabel
+            renderTable();
+            
+            // Simpan ke localStorage
+            saveToLocalStorage();
+        }
+
+        // Fungsi untuk menghapus data pelanggaran
+        function deleteViolation(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus data pelanggaran ini?')) {
+                violationsData = violationsData.filter(violation => violation.id !== id);
+                renderTable();
+                
+                // Simpan ke localStorage
+                saveToLocalStorage();
+            }
+        }
+
+        // Fungsi untuk menyimpan data ke localStorage
+        function saveToLocalStorage() {
+            localStorage.setItem('violationsData', JSON.stringify(violationsData));
+        }
+
+        // Fungsi untuk memuat data dari localStorage
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem('violationsData');
+            if (savedData) {
+                violationsData = JSON.parse(savedData);
+            }
+        }
+
+        // Event listener untuk tombol start
+        startBtn.addEventListener('click', function() {
+            // Sembunyikan preloader dengan animasi
+            preloader.classList.add('hidden');
+            
+            // Tampilkan konten utama dengan animasi
+            setTimeout(() => {
+                mainContent.classList.add('show');
+            }, 300);
+            
+            // Mulai animasi judul
+            const title = document.querySelector('.title');
+            title.style.animationPlayState = 'running';
+        });
+
+        // Event listener untuk form submit
+        violationForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validasi form
+            if (!selectedClassInput.value) {
+                alert('Silakan pilih kelas siswa');
+                return;
+            }
+            
+            if (!selectedViolationInput.value) {
+                alert('Silakan pilih jenis pelanggaran');
+                return;
+            }
+            
+            // Ambil data dari form
+            const violationData = {
+                name: document.getElementById('studentName').value,
+                class: selectedClassInput.value,
+                violation: selectedViolationInput.value,
+                date: document.getElementById('violationDate').value,
+                desc: document.getElementById('violationDesc').value
+            };
+            
+            // Tambahkan data
+            addViolation(violationData);
+            
+            // Reset form
+            violationForm.reset();
+            document.querySelectorAll('.class-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelectorAll('.violation-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Tampilkan pesan sukses
+            alert('Data pelanggaran berhasil disimpan!');
+        });
+
+        // Event listener untuk tombol reset
+        resetBtn.addEventListener('click', function() {
+            if (confirm('Apakah Anda yakin ingin mereset form?')) {
+                violationForm.reset();
+                document.querySelectorAll('.class-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                document.querySelectorAll('.violation-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                selectedClassInput.value = '';
+                selectedViolationInput.value = '';
+            }
+        });
+
+        // Inisialisasi
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set tanggal hari ini sebagai default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('violationDate').value = today;
+            
+            // Generate pilihan kelas
+            generateClassOptions();
+            
+            // Load data dari localStorage
+            loadFromLocalStorage();
+            
+            // Render tabel
+            renderTable();
+            
+            // Animasi masuk untuk form dan tabel
+            setTimeout(() => {
+                document.querySelector('.data-form').style.animation = 'slideIn 0.8s ease forwards';
+                document.querySelector('.data-table').style.animation = 'slideIn 0.8s ease forwards 0.3s';
+                document.querySelector('.data-form').style.opacity = '0';
+                document.querySelector('.data-table').style.opacity = '0';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
